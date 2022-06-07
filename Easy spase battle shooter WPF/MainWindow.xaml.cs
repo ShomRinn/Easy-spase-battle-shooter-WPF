@@ -17,9 +17,7 @@ using System.Windows.Threading;
 
 namespace Easy_spase_battle_shooter_WPF
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
+
     public partial class MainWindow : Window
     {
 
@@ -29,13 +27,13 @@ namespace Easy_spase_battle_shooter_WPF
 
         Random rand = new Random();
 
-        int EnemySpriteCounter = 0;
+        int EnemySpriteCounter = 0; //
         int EnemyCounter = 100;
         int PlayerSpeed = 10;
         int limit = 50;
         int score = 0;
         int damage = 0;
-        int enemySpeed = 10;
+        int enemySpeed = 10; //
 
         Rect PlayerHitBox;
 
@@ -45,7 +43,7 @@ namespace Easy_spase_battle_shooter_WPF
             InitializeComponent();
 
             gameTimer.Interval = TimeSpan.FromMilliseconds(20);
-            gameTimer.Tick +=GameLoop;
+            gameTimer.Tick += GameLoop;
             gameTimer.Start();
 
             MyCanvas.Focus();
@@ -63,64 +61,7 @@ namespace Easy_spase_battle_shooter_WPF
 
         }
 
-        private void GameLoop(object sender, EventArgs e)
-        {
-            PlayerHitBox = new Rect(Canvas.GetLeft(player), Canvas.GetTop(player), player.Width, player.Height);
-
-            EnemyCounter += 1;
-
-            ScoreText.Content = "Score" + score;
-            DamageText.Content = "danage" + damage;
-
-            if (EnemyCounter < 0)
-            {
-                MakeEnemies();
-                EnemyCounter = limit;
-            }
-
-            if (MoveLeft == true && Canvas.GetLeft(player) > 0)
-            {
-
-                Canvas.SetLeft(player, Canvas.GetLeft(player) - PlayerSpeed);
-
-            }
-
-            if (MoveRight == true && Canvas.GetLeft(player) + 90 < Application.Current.MainWindow.Width)
-            {
-
-                Canvas.SetLeft(player, Canvas.GetLeft(player) + PlayerSpeed);
-
-            }
-
-
-            foreach (var x in MyCanvas.Children.OfType<Rectangle>())
-            {
-
-                if (x is Rectangle && (string)x.Tag == "bullet")
-                {
-                    Canvas.SetTop(x, Canvas.GetTop(x)-20);
-                    Rect bulletHitBox = new Rect(Canvas.GetLeft(x), Canvas.GetTop(x), x.Width, x.Height);
-
-                    if (Canvas.GetTop(x) < 10)
-                    {
-                        itemRemover.Add(x);
-                    }
-
-                }
-
-                if (x is Rectangle && (string)x.Tag == "enemy")
-                {
-                    Canvas.SetTop(x, Canvas.GetTop(x) + enemySpeed);
-                }
-
-
-            }
-
-        }
-
-       
-
-private void OnKeyDown(object sender, KeyEventArgs e)
+        private void OnKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Left)
             {
@@ -163,18 +104,19 @@ private void OnKeyDown(object sender, KeyEventArgs e)
 
         }
 
-
-        private void MakeEnemies(){
+        private void MakeEnemies()
+        {
 
             ImageBrush EnemySprite = new ImageBrush();
 
             EnemySpriteCounter = rand.Next(1, 5);
 
-            switch (EnemySpriteCounter){
+            switch (EnemySpriteCounter)
+            {
 
                 case 1:
                     EnemySprite.ImageSource = new BitmapImage(new Uri("pack://application:,,,/images/1.png"));
-                        break;
+                    break;
                 case 2:
                     EnemySprite.ImageSource = new BitmapImage(new Uri("pack://application:,,,/images/2.png"));
                     break;
@@ -203,6 +145,122 @@ private void OnKeyDown(object sender, KeyEventArgs e)
             Canvas.SetLeft(newEnemy, rand.Next(30, 430));
             MyCanvas.Children.Add(newEnemy);
 
+
+
         }
+
+
+        private void GameLoop(object sender, EventArgs e)
+        {
+            PlayerHitBox = new Rect(Canvas.GetLeft(player), Canvas.GetTop(player), player.Width, player.Height);
+
+            EnemyCounter -= 1;  //!
+
+            ScoreText.Content = "Score" + score;
+            DamageText.Content = "danage" + damage;
+
+            if (EnemyCounter < 0)
+            {
+                MakeEnemies();
+                EnemyCounter = limit;
+            }
+
+            if (MoveLeft == true && Canvas.GetLeft(player) > 0)
+            {
+
+                Canvas.SetLeft(player, Canvas.GetLeft(player) - PlayerSpeed);
+
+            }
+
+            if (MoveRight == true && Canvas.GetLeft(player) + 90 < Application.Current.MainWindow.Width)
+            {
+
+                Canvas.SetLeft(player, Canvas.GetLeft(player) + PlayerSpeed);
+
+            }
+
+
+            foreach (var x in MyCanvas.Children.OfType<Rectangle>())
+            {
+
+                if (x is Rectangle && (string)x.Tag == "bullet")
+                {
+                    Canvas.SetTop(x, Canvas.GetTop(x) - 20);
+
+                    Rect bulletHitBox = new Rect(Canvas.GetLeft(x), Canvas.GetTop(x), x.Width, x.Height);
+
+                    if (Canvas.GetTop(x) < 10)
+                    {
+                        itemRemover.Add(x);
+                    }
+
+                    foreach (var y in MyCanvas.Children.OfType<Rectangle>())
+                    {
+                        if (y is Rectangle && (string)y.Tag == "enemy")
+                        {
+                            Rect EnemyHit = new Rect(Canvas.GetLeft(y), Canvas.GetTop(y), y.Width, y.Height);
+
+                            if (bulletHitBox.IntersectsWith(EnemyHit))
+                            {
+                                itemRemover.Add(x);
+                                itemRemover.Add(y);
+                                score++;
+                            }
+                        }
+                    }
+
+                }
+
+                if (x is Rectangle && (string)x.Tag == "enemy")
+                {
+                    Canvas.SetTop(x, Canvas.GetTop(x) + enemySpeed);
+
+                    if (Canvas.GetTop(x) > 750)
+                    {
+                        itemRemover.Add(x);
+                        damage += 10;
+                    }
+                }
+
+                Rect EmenyHitBox = new Rect(Canvas.GetLeft(x), Canvas.GetTop(x), x.Width, x.Height);
+
+                if (PlayerHitBox.IntersectsWith(EmenyHitBox))
+                {
+                    itemRemover.Add(x);
+                    damage += 5;
+                }
+
+
+            }
+
+            foreach (Rectangle i in itemRemover)
+            {
+
+                MyCanvas.Children.Remove(i);
+
+            }
+
+            if (score > 5)
+            {
+                limit = 20;
+                enemySpeed = 15;
+            }
+            if (damage > 99)
+            {
+                gameTimer.Stop();
+                DamageText.Content = "Damage: 100";
+                MessageBox.Show("Capitan we faild!" + Environment.NewLine + "You have destroyed " + score + " Alien ships");
+
+                System.Diagnostics.Process.Start(Application.ResourceAssembly.Location);
+                Application.Current.Shutdown();
+            }
+        }
+
+
+
+
+
+
+
     }
 }
