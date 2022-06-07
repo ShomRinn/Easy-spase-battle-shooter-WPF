@@ -149,15 +149,14 @@ namespace Easy_spase_battle_shooter_WPF
 
         }
 
-
         private void GameLoop(object sender, EventArgs e)
         {
             PlayerHitBox = new Rect(Canvas.GetLeft(player), Canvas.GetTop(player), player.Width, player.Height);
 
-            EnemyCounter -= 1;  //!
+            EnemyCounter -= 1;
 
-            ScoreText.Content = "Score" + score;
-            DamageText.Content = "danage" + damage;
+            ScoreText.Content = "Score: " + score;
+            DamageText.Content = "Damage " + damage;
 
             if (EnemyCounter < 0)
             {
@@ -167,22 +166,16 @@ namespace Easy_spase_battle_shooter_WPF
 
             if (MoveLeft == true && Canvas.GetLeft(player) > 0)
             {
-
                 Canvas.SetLeft(player, Canvas.GetLeft(player) - PlayerSpeed);
-
             }
-
             if (MoveRight == true && Canvas.GetLeft(player) + 90 < Application.Current.MainWindow.Width)
             {
-
                 Canvas.SetLeft(player, Canvas.GetLeft(player) + PlayerSpeed);
-
             }
 
 
             foreach (var x in MyCanvas.Children.OfType<Rectangle>())
             {
-
                 if (x is Rectangle && (string)x.Tag == "bullet")
                 {
                     Canvas.SetTop(x, Canvas.GetTop(x) - 20);
@@ -198,9 +191,9 @@ namespace Easy_spase_battle_shooter_WPF
                     {
                         if (y is Rectangle && (string)y.Tag == "enemy")
                         {
-                            Rect EnemyHit = new Rect(Canvas.GetLeft(y), Canvas.GetTop(y), y.Width, y.Height);
+                            Rect enemyHit = new Rect(Canvas.GetLeft(y), Canvas.GetTop(y), y.Width, y.Height);
 
-                            if (bulletHitBox.IntersectsWith(EnemyHit))
+                            if (bulletHitBox.IntersectsWith(enemyHit))
                             {
                                 itemRemover.Add(x);
                                 itemRemover.Add(y);
@@ -220,47 +213,44 @@ namespace Easy_spase_battle_shooter_WPF
                         itemRemover.Add(x);
                         damage += 10;
                     }
+
+                    Rect enemyHitBox = new Rect(Canvas.GetLeft(x), Canvas.GetTop(x), x.Width, x.Height);
+
+                    if (PlayerHitBox.IntersectsWith(enemyHitBox))
+                    {
+                        itemRemover.Add(x);
+                        damage += 5;
+                    }
+
                 }
-
-                Rect EmenyHitBox = new Rect(Canvas.GetLeft(x), Canvas.GetTop(x), x.Width, x.Height);
-
-                if (PlayerHitBox.IntersectsWith(EmenyHitBox))
-                {
-                    itemRemover.Add(x);
-                    damage += 5;
-                }
-
-
             }
 
             foreach (Rectangle i in itemRemover)
             {
-
                 MyCanvas.Children.Remove(i);
-
             }
+
 
             if (score > 5)
             {
                 limit = 20;
                 enemySpeed = 15;
             }
+
             if (damage > 99)
             {
                 gameTimer.Stop();
                 DamageText.Content = "Damage: 100";
-                MessageBox.Show("Capitan we faild!" + Environment.NewLine + "You have destroyed " + score + " Alien ships");
+                DamageText.Foreground = Brushes.Red;
+                MessageBox.Show("Captain You have destroyed " + score + " Alien Ships" + Environment.NewLine + "Press Ok to Play Again", "MOO Says: ");
 
                 System.Diagnostics.Process.Start(Application.ResourceAssembly.Location);
                 Application.Current.Shutdown();
+
             }
+
+
         }
-
-
-
-
-
-
 
     }
 }
